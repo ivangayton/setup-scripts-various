@@ -5,15 +5,56 @@
 # Assumes you already have a secured machine and user with sudo privileges
 # as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
 
-sudo apt update
+echo please enter your domain name
+read domain_name
 
-# install Nginx as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
-sudo apt install -y nginx
+echo updating distro NOT TODAY
+#sudo apt update
+
+# Install Nginx as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
+if [ ! type nginx ]; then
+    echo installing nginx
+    sudo apt install -y nginx
+else echo Nginx seems to be already installed
+fi
+echo allowing nginx through the UFW firewall
 sudo ufw allow 'Nginx HTTP'
 
 # Secure Nginx for HTTPS traffic using LetsEncrypt as per https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
-sudo apt install -y letsencrypt
+if [ ! type letsencrypt ]; then
+    echo installing letsencrypt
+    sudo apt install -y letsencrypt
+else echo letsencrypt seems to be already installed
+fi
 
+# Add a location to the nginx config, don't do twice (if-fi) and make a backup
+if [ ! -f /etc/nginx/sites-available/defaultBAK ] ; then
+echo backing up /etc/nginx/sites-available/default
+sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/defaultBAK
+echo adding location block to /etc/nginx/sites-available/default
+sudo sed -i '0,/server {/s/server {/server {\n        location ~ \/.well-known {\n            allow all;\n        }/' /etc/nginx/sites-available/default
+else echo there seems to already be a backup of /etc/nginx/sites-available/default, which probably means this script has already been run. Not modifying the file.
+fi
 
+echo restarting Nginx
+sudo systemctl restart nginx
 
+if [ ! -d /etc/letsencrypt/live ]; then
+    echo running letsencrypt
+    sudo letsencrypt certonly -a webroot --webroot-path=/var/www/html -d $domain_name -d www.$domain_name
+    echo backing up letsencrypt folder
+    sudo cp -r /etc/letsencrypt/live/ /etc/letsencrypt/liveBAK
+else echo it looks like letsencrypt has already been run!
+fi
+if [ ! -f /etc/ssl/certs/dhparam.pem ]; then
+    sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+fi
+
+if [ ! -f /ect/nginx/snippets/ssl-$domain_name.conf ]; then
+    echo creating snippet to configure nginx with new cert
+    sudo sh -c 'echo "ssl_certificate /etc/letsencrypt/live/$domain_name/fullchain.pem;" >> /etc/nginx/snippets/sslconf'
+    sudo sh -c 'echo "ssl_certificate_key /etc/letsencrypt/live/$domain_nam/eprivkey.pem;" >> /etc/nginx/snippets/sslconf'
+    sudo mv /etc/nginx/snippets/sslconf /etc/nginx/snippets/ssl-$domain_name.conf
+else echo it looks like the snippets have already been created
+fi
 
