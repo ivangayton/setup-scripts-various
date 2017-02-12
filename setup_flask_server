@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Setup script for a Flask server with an Nginx reverse proxy and https
+
+sudo apt install -y git
+
