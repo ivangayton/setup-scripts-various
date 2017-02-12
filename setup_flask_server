@@ -1,6 +1,19 @@
 #!/bin/bash
 
 # Setup script for a Flask server with an Nginx reverse proxy and https
+# on Ubuntu 16.04-64 (in this case Digital Ocean droplet)
+# Assumes you already have a secured machine and user with sudo privileges
+# as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
 
-sudo apt install -y git
+sudo apt update
+
+# install Nginx as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
+sudo apt install -y nginx
+sudo ufw allow 'Nginx HTTP'
+
+# Secure Nginx for HTTPS traffic using LetsEncrypt as per https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
+sudo apt install -y letsencrypt
+
+
+
 
