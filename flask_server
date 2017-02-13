@@ -88,7 +88,8 @@ sudo mv ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 else the file already exists
 fi
 
-if [ ! -f /etc/nginx/sites-available/defaultBAK ]; then
+if [ ! -f /etc/nginx/sites-available/defaultBAK2 ]; then
     echo Backing up /etc/nginx/sites-available/default
-    sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/defaulBAK
+    sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/defaulBAK2
     
+fi
