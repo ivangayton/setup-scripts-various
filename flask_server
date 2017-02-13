@@ -50,11 +50,45 @@ if [ ! -f /etc/ssl/certs/dhparam.pem ]; then
     sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
 fi
 
-if [ ! -f /ect/nginx/snippets/ssl-$domain_name.conf ]; then
+if [ ! -f /etc/nginx/snippets/ssl-$domain_name.conf ]; then
     echo creating snippet to configure nginx with new cert
-    sudo sh -c 'echo "ssl_certificate /etc/letsencrypt/live/$domain_name/fullchain.pem;" >> /etc/nginx/snippets/sslconf'
-    sudo sh -c 'echo "ssl_certificate_key /etc/letsencrypt/live/$domain_nam/eprivkey.pem;" >> /etc/nginx/snippets/sslconf'
-    sudo mv /etc/nginx/snippets/sslconf /etc/nginx/snippets/ssl-$domain_name.conf
+    echo "ssl_certificate /etc/letsencrypt/live/$domain_name/fullchain.pem;" > sslconf
+    echo "ssl_certificate_key /etc/letsencrypt/live/$domain_name/privkey.pem;" >> sslconf
+    sudo mv sslconf /etc/nginx/snippets/ssl-$domain_name.conf
 else echo it looks like the snippets have already been created
 fi
 
+if [ ! -f /etc/nginx/snippets/ssl-params.conf ]; then
+    echo creating ssl-params.conf
+    cat > ssl-params.conf <<EOF
+# from https://cipherli.st/
+# and https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
+
+ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+ssl_prefer_server_ciphers on;
+ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+ssl_ecdh_curve secp384r1;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+ssl_stapling on;
+ssl_stapling_verify on;
+resolver 8.8.8.8 8.8.4.4 valid=300s;
+resolver_timeout 5s;
+# Disable preloading HSTS for now.  You can use the commented out header line that includes
+# the "preload" directive if you understand the implications.
+#add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
+add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";
+add_header X-Frame-Options DENY;
+add_header X-Content-Type-Options nosniff;
+
+ssl_dhparam /etc/ssl/certs/dhparam.pem;
+
+EOF
+sudo mv ssl-params.conf /etc/nginx/snippets/ssl-params.conf
+else the file already exists
+fi
+
+if [ ! -f /etc/nginx/sites-available/defaultBAK ]; then
+    echo Backing up /etc/nginx/sites-available/default
+    sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/defaulBAK
+    
