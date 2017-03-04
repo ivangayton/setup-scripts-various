@@ -8,11 +8,12 @@
 echo please enter your domain name
 read domain_name
 
-echo updating distro NOT TODAY
-#sudo apt update
+echo updating distro
+sudo apt -y update
+sudo apt -y upgrade
 
 # Install Nginx as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
-if [ ! type nginx ]; then
+if ! type "nginx"; then
     echo installing nginx
     sudo apt install -y nginx
 else echo Nginx seems to be already installed
@@ -21,7 +22,7 @@ echo allowing nginx through the UFW firewall
 sudo ufw allow 'Nginx HTTP'
 
 # Secure Nginx for HTTPS traffic using LetsEncrypt as per https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
-if [ ! type letsencrypt ]; then
+if ! type "letsencrypt"; then
     echo installing letsencrypt
     sudo apt install -y letsencrypt
 else echo letsencrypt seems to be already installed
@@ -85,11 +86,25 @@ ssl_dhparam /etc/ssl/certs/dhparam.pem;
 
 EOF
 sudo mv ssl-params.conf /etc/nginx/snippets/ssl-params.conf
-else the file already exists
+else echo the ssl-params file already exists
 fi
 
 if [ ! -f /etc/nginx/sites-available/defaultBAK2 ]; then
     echo Backing up /etc/nginx/sites-available/default
-    sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/defaulBAK2
-    
+    sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/defaultBAK2
+    sudo sed -i "0,/server_name _;/s/server_name _;/server_name $domain_name www.$domain_name;\n        return 301 https:\/\/\$server_name\$request_uri;/" /etc/nginx/sites-available/default
+    echo "server {" | sudo tee -a /etc/nginx/sites-available/default
+    echo "    listen 443 ssl http2 default_server;" | sudo tee -a /etc/nginx/sites-available/default
+    echo "    listen [::]:443 ssl http2 default_server;" | sudo tee -a /etc/nginx/sites-available/default
+    echo "    include snippets/ssl-$domain_name.conf;" | sudo tee -a /etc/nginx/sites-available/default
+    echo "    include snippets/ssl-params.conf;" | sudo tee -a /etc/nginx/sites-available/default 
+    echo "}" | sudo tee -a /etc/nginx/sites-available/default
+else echo the server name is already set 
 fi
+
+echo allowing nginx full and disallowing http
+sudo ufw allow 'Nginx Full'
+sudo ufw delete allow 'Nginx HTTP'
+
+echo restarting nginx
+sudo systemctl restart nginx
