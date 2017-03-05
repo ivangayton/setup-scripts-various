@@ -120,3 +120,17 @@ sudo ufw delete allow 'Nginx HTTP'
 
 echo restarting nginx
 sudo systemctl restart nginx
+
+echo
+echo ****************************************************************
+echo You should probably set up a cron job to renew your certificate.
+echo as described at the end of this tutorial:
+echo https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
+echo ****************************************************************
+echo
+echo To see if the installation worked, open $domain_name from a browser
+echo and see if you see the nginx welcome page. The address bar should show
+echo https://$domain_name
+echo even if you only enter $domain_name
+echo 
+echo The nginx welcome page lives at /usr/share/nginx/html/index.html 
