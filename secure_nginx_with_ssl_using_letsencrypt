@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Setup script for a Flask server with an Nginx reverse proxy and https
+# Setup script for a web server using nginx secured by letsencrypt ssl
 # on Ubuntu 16.04-64 (in this case Digital Ocean droplet)
+# Essentially automates the process shown in this tutorial:
+# https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
 # Assumes you already have a secured machine and user with sudo privileges
 # as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
 
