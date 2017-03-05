@@ -6,9 +6,19 @@
 # https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
 # Assumes you already have a secured machine and user with sudo privileges
 # as per https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
+# Requires a bit of interaction; it is theoretically possible to automate the
+# answers to the letsencrypt prompts using Expect, but a huge hassle. Better
+# to stick around and answer the questions.
 
+echo
+echo Welcome to an automated web server securing process.  Please stick around!
+echo You will need to answer some questions from the letsencrypt prompts.
+echo This procedure is based on, and more or less automates, the tutorial here:
+echo https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
+echo
 echo please enter your domain name
 read domain_name
+
 
 echo updating distro
 sudo apt -y update
