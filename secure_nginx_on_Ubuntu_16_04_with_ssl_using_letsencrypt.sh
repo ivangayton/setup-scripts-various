@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Setup script for a web server using nginx secured by letsencrypt ssl
 # on Ubuntu 16.04-64 (in this case Digital Ocean droplet)
 # Essentially automates the process shown in this tutorial:
@@ -16,9 +18,45 @@ echo You will need to answer some questions from the letsencrypt prompts.
 echo This procedure is based on, and more or less automates, the tutorial here:
 echo https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
 echo
-echo please enter your domain name
-read domain_name
 
+count=0
+var="arg$count"
+echo Please enter your domain name
+read arg$count
+echo
+echo Please enter any subdomain names you may have.
+echo Don\'t include the domain name, only the prefix,
+echo For example, to include sub.example.com on your certificate, just type sub
+
+# horrible way to get a list of subdomains without knowing how many beforehand
+while [ ! -z ${!var} ]; do
+    let count=count+1
+    var="arg$count"
+    read arg$count
+    if [ ! -z ${!var} ]; then
+       echo If you have more subdomains, please enter them. If not, just press enter!
+    fi
+done
+
+# Echo the domain name and list of all subdomains back to the user for confirmation
+subdomains=$((count-1))
+domain_name=$arg0
+echo it looks like you have domain $domain_name and $subdomains subdomains:
+readcount=1
+var="arg$readcount"
+while [ ! -z ${!var} ]; do
+    let readcount=readcount+1
+    echo "${!var}.$domain_name"
+    var="arg$readcount"
+done
+
+# Quit if the user is not happy with the domain name and list of subdomains
+echo
+read -p "is this correct? (y/n)" -n 1 -r
+echo
+if [[ $REPLY =~ ^[Nn]$ ]]; then
+    exit 1
+fi
 
 echo updating distro
 sudo apt -y update
@@ -54,6 +92,9 @@ sudo systemctl restart nginx
 
 if [ ! -d /etc/letsencrypt/live ]; then
     echo running letsencrypt
+
+    #TODO add all the subdomains to this command
+    
     sudo letsencrypt certonly -a webroot --webroot-path=/var/www/html -d $domain_name -d www.$domain_name
     echo backing up letsencrypt folder
     sudo cp -r /etc/letsencrypt/live/ /etc/letsencrypt/liveBAK
