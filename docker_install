@@ -1,0 +1,32 @@
+#!/bin/bash -eu
+
+# install docker and docker-compose as per \
+# https://docs.docker.com/engine/installation/linux/ubuntu/\
+# #install-using-the-repository
+
+echo installing apt-transport-https, ca-certificates, curl,
+echo and software-properties-common
+
+sudo apt install apt-transport-https ca-certificates curl \
+     software-properties-common
+
+echo installing gpg key for Docker
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    sudo apt-key add -
+
+echo adding the Docker Ubuntu repo
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+echo updating again
+sudo apt -y update
+
+echo installing Docker-ce and docker-compose
+sudo apt install -y docker-ce docker-compose
+
+echo modifying user to join docker group
+sudo usermod -aG docker $USER
+
+echo Done. With some luck Docker and Docker-compose are now installed.

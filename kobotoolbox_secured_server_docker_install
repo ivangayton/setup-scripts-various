@@ -1,34 +1,50 @@
 #!/bin/bash -eu
 
+# Script to install Kobotoolbox on Ubuntu 16.04 as per
+# https://github.com/kobotoolbox/kobo-docker
+# Assumes you have a a more or less clean Ubuntu install and a user with sudo
+# Tested on a $10/month Digital Ocean droplet (1 GB RAM, 30 GB SSD)
+
 echo please enter your domain name
 read domain_name
 
-# install docker-compose
 sudo apt -y update
 sudo apt -y upgrade
 
-sudo apt install apt install apt-transport-https \
-     ca-certificates curl software-properties-common
+# install docker and docker-compose (separate script to reduce mess)
+echo installing Docker-Compose by launching Docker install script
+if ! type "docker-compose"; then
+    ./docker_install
+else echo looks like Docker-Compose is already installed
+fi
 
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
-
-sudo apt -y update
-
-sudo apt install -y docker-ce docker-compose
-
-sudo usermod -aG docker $USER
-
-if [[ ! type "letsencrypt" ]]; then
+    
+if ! type "letsencrypt"; then
     echo installing letsencrypt
     sudo apt install -y letsencrypt
 else echo letsencrypt seems to be already installed
 fi
 
-sudo letsencrypt certonly --standalone -d $domain_name -d www.$domain_name -d kf.$domain_name -d kc.$domain_name -d en.$domain_name
+echo running letsencrypt to get certificat for $domain_name
+sudo letsencrypt certonly --standalone -d $domain_name \
+     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
+     -d en.$domain_name
 
-git clone https://github.com/kobotoolbox/kobo-docker.git
+echo downloading Kobo Toolbox repository from Github into /home/$USER
+cd /home/$USER
+if [ ! -d kobo-docker ]; then
+    git clone https://github.com/kobotoolbox/kobo-docker.git
+else echo Looks like Kobo Toolbox is already downloaded
+fi
+cd kobo-docker
+
+echo creating a symbolic link to the server configuration for Docker-compose
+if [ ! -f docker-compose.yml ]; then
+    ln -s docker-compose.server.yml docker-compose.yml
+else echo Looks like the symlink has already been created
+fi
+
+echo pulling latest images from Docker Hub
+sudo -u $USER docker-compose pull
+
+    
