@@ -55,7 +55,13 @@ echo $enketo_api_token
 
 echo Modifying envfile.server.txt to work with $domain_name
 if [ ! -f envfile.server.txt.BAK ]; then
+    # Create a backup
     cp envfile.server.txt envfile.server.txt.BAK
+    # Substitute in the appropriate strings in the envfile using sed
+    # syntax sed -i "0,/ORIGINAL/s/ORIGINAL/REPLACEMENT/"
+    # replaces only the first instance of ORIGINAL with REPLACEMENT
+    # a bit overkill (could have just overwritten the envfile including the
+    # appropriate values, but this way is more general)
     sed -i "0,/PUBLIC_DOMAIN_NAME=/s/PUBLIC_DOMAIN_NAME=/PUBLIC_DOMAIN_NAME=$domain_name/" envfile.server.txt
     sed -i "0,/KOBOFORM_PUBLIC_SUBDOMAIN=/s/KOBOFORM_PUBLIC_SUBDOMAIN=/KOBOFORM_PUBLIC_SUBDOMAIN=kf/" envfile.server.txt
     sed -i "0,/KOBOCAT_PUBLIC_SUBDOMAIN=/s/KOBOCAT_PUBLIC_SUBDOMAIN=/KOBOCAT_PUBLIC_SUBDOMAIN=kc/" envfile.server.txt
