@@ -21,7 +21,7 @@ echo
 sudo apt -y update
 sudo apt -y upgrade
 
-# install docker and docker-compose (separate script to reduce mess)
+# install docker and docker-compose (separate script for better reusability)
 echo installing Docker-Compose by launching Docker install script
 if ! type "docker-compose"; then
     ./docker_install
@@ -57,9 +57,9 @@ echo Modifying envfile.server.txt to work with $domain_name
 if [ ! -f envfile.server.txt.BAK ]; then
     cp envfile.server.txt envfile.server.txt.BAK
     sed -i "0,/PUBLIC_DOMAIN_NAME=/s/PUBLIC_DOMAIN_NAME=/PUBLIC_DOMAIN_NAME=$domain_name/" envfile.server.txt
-    sed -i "0,/KOBOFORM_PUBLIC_SUBDOMAIN=/s/KOBOFORM_PUBLIC_SUBDOMAIN=/KOBOFORM_PUBLIC_SUBDOMAIN=kf.$domain_name/" envfile.server.txt
-    sed -i "0,/KOBOCAT_PUBLIC_SUBDOMAIN=/s/KOBOCAT_PUBLIC_SUBDOMAIN=/KOBOCAT_PUBLIC_SUBDOMAIN=kc.$domain_name/" envfile.server.txt
-    sed -i "0,/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=/s/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=en.$domain_name/" envfile.server.txt
+    sed -i "0,/KOBOFORM_PUBLIC_SUBDOMAIN=/s/KOBOFORM_PUBLIC_SUBDOMAIN=/KOBOFORM_PUBLIC_SUBDOMAIN=kf/" envfile.server.txt
+    sed -i "0,/KOBOCAT_PUBLIC_SUBDOMAIN=/s/KOBOCAT_PUBLIC_SUBDOMAIN=/KOBOCAT_PUBLIC_SUBDOMAIN=kc/" envfile.server.txt
+    sed -i "0,/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=/s/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=en/" envfile.server.txt
     sed -i "0,/ENKETO_API_TOKEN=/s/ENKETO_API_TOKEN=/ENKETO_API_TOKEN=$enketo_api_token/" envfile.server.txt
     sed -i "0,/DJANGO_SECRET_KEY=/s/DJANGO_SECRET_KEY=/DJANGO_SECRET_KEY=$django_secret_key/" envfile.server.txt
     sed -i "0,/KOBO_SUPERUSER_USERNAME=/s/KOBO_SUPERUSER_USERNAME=/KOBO_SUPERUSER_USERNAME=$kobo_superuser_username/" envfile.server.txt
@@ -75,9 +75,26 @@ if ! type "letsencrypt"; then
 else echo letsencrypt seems to be already installed
 fi
 
-echo running letsencrypt to get certificat for $domain_name
+echo running letsencrypt to get certificate for $domain_name
 sudo letsencrypt certonly --standalone -d $domain_name \
      -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
      -d en.$domain_name
 
 echo creating a secrets directory for the ssl keys
+if [ ! -d secrets ]; then
+    mkdir secrets
+    echo copying fullchain.pem to secrets/ssl.crt
+    sudo cp /etc/letsencrypt/live/$domain_name/fullchain.pem secrets/ssl.crt
+    echo copying privkey.pem to secrets/ssl.key
+    sudo cp /etc/letsencrypt/live/$domain_name/privkey.pem secrets/ssl.key
+else echo looks like the secrets directory is already created
+fi
+
+echo building the image
+sudo docker-compose build
+
+echo starting up the server
+sudo docker-compose up -d
+
+echo
+echo That should be it. Go to $domain_name to see if you have a working server!
