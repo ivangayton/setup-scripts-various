@@ -7,6 +7,16 @@
 
 echo please enter your domain name
 read domain_name
+echo
+echo please enter the username of the first Kobo Toolbox superuser
+read kobo_superuser_username
+echo
+echo please enter the password for the first Kobo Toolbox superuser
+read kobo_superuser_password
+echo
+echo Please enter the email address where users can contact you for support
+read kobo_support_email
+echo
 
 sudo apt -y update
 sudo apt -y upgrade
@@ -17,18 +27,6 @@ if ! type "docker-compose"; then
     ./docker_install
 else echo looks like Docker-Compose is already installed
 fi
-
-    
-if ! type "letsencrypt"; then
-    echo installing letsencrypt
-    sudo apt install -y letsencrypt
-else echo letsencrypt seems to be already installed
-fi
-
-echo running letsencrypt to get certificat for $domain_name
-sudo letsencrypt certonly --standalone -d $domain_name \
-     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
-     -d en.$domain_name
 
 echo downloading Kobo Toolbox repository from Github into /home/$USER
 cd /home/$USER
@@ -45,6 +43,41 @@ else echo Looks like the symlink has already been created
 fi
 
 echo pulling latest images from Docker Hub
-sudo -u $USER docker-compose pull
+sudo docker-compose pull
 
-    
+echo Creating and storing a 50-character random string for Django secret key
+django_secret_key=$(sudo docker-compose run --rm kpi python -c 'from django.utils.crypto import get_random_string; print(get_random_string(50, "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)"))')
+echo $django_secret_key
+echo
+echo Creating and storing a 20-character random string for Eketo API key
+enketo_api_token=$(sudo docker-compose run --rm kpi python -c 'from django.utils.crypto import get_random_string; print(get_random_string(20, "abcdefghijklmnopqrstuvwxyz0123456789"))')
+echo $enketo_api_token
+
+echo Modifying envfile.server.txt to work with $domain_name
+if [ ! -f envfile.server.txt.BAK ]; then
+    cp envfile.server.txt envfile.server.txt.BAK
+    sed -i "0,/PUBLIC_DOMAIN_NAME=/s/PUBLIC_DOMAIN_NAME=/PUBLIC_DOMAIN_NAME=$domain_name/" envfile.server.txt
+    sed -i "0,/KOBOFORM_PUBLIC_SUBDOMAIN=/s/KOBOFORM_PUBLIC_SUBDOMAIN=/KOBOFORM_PUBLIC_SUBDOMAIN=kf.$domain_name/" envfile.server.txt
+    sed -i "0,/KOBOCAT_PUBLIC_SUBDOMAIN=/s/KOBOCAT_PUBLIC_SUBDOMAIN=/KOBOCAT_PUBLIC_SUBDOMAIN=kc.$domain_name/" envfile.server.txt
+    sed -i "0,/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=/s/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=/ENKETO_EXPRESS_PUBLIC_SUBDOMAIN=en.$domain_name/" envfile.server.txt
+    sed -i "0,/ENKETO_API_TOKEN=/s/ENKETO_API_TOKEN=/ENKETO_API_TOKEN=$enketo_api_token/" envfile.server.txt
+    sed -i "0,/DJANGO_SECRET_KEY=/s/DJANGO_SECRET_KEY=/DJANGO_SECRET_KEY=$django_secret_key/" envfile.server.txt
+    sed -i "0,/KOBO_SUPERUSER_USERNAME=/s/KOBO_SUPERUSER_USERNAME=/KOBO_SUPERUSER_USERNAME=$kobo_superuser_username/" envfile.server.txt
+    sed -i "0,/KOBO_SUPERUSER_PASSWORD=/s/KOBO_SUPERUSER_PASSWORD=/KOBO_SUPERUSER_PASSWORD=$kobo_superuser_password/" envfile.server.txt
+    sed -i "0,/KOBO_SUPPORT_EMAIL=/s/KOBO_SUPPORT_EMAIL=/KOBO_SUPPORT_EMAIL=$kobo_support_email/" envfile.server.txt
+
+else echo looks like envfile.server.txt has already been modified
+fi
+
+echo installing letsencrypt    
+if ! type "letsencrypt"; then
+    sudo apt install -y letsencrypt
+else echo letsencrypt seems to be already installed
+fi
+
+echo running letsencrypt to get certificat for $domain_name
+sudo letsencrypt certonly --standalone -d $domain_name \
+     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
+     -d en.$domain_name
+
+echo creating a secrets directory for the ssl keys
