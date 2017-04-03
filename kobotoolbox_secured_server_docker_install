@@ -3,7 +3,7 @@
 # Script to install Kobotoolbox on Ubuntu 16.04 as per
 # https://github.com/kobotoolbox/kobo-docker
 # Assumes you have a a more or less clean Ubuntu install and a user with sudo
-# Tested on a $10/month Digital Ocean droplet (1 GB RAM, 30 GB SSD)
+# Tested on a $20/month Digital Ocean droplet (2 GB RAM, 30 GB SSD)
 
 echo please enter your domain name
 read domain_name
@@ -21,6 +21,17 @@ echo
 sudo apt -y update
 sudo apt -y upgrade
 
+echo installing letsencrypt    
+if ! type "letsencrypt"; then
+    sudo apt install -y letsencrypt
+else echo letsencrypt seems to be already installed
+fi
+
+echo running letsencrypt to get certificate for $domain_name
+sudo letsencrypt certonly --standalone -d $domain_name \
+     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
+     -d en.$domain_name
+
 # install docker and docker-compose (separate script for better reusability)
 echo installing Docker-Compose by launching Docker install script
 if ! type "docker-compose"; then
@@ -34,6 +45,7 @@ if [ ! -d kobo-docker ]; then
     git clone https://github.com/kobotoolbox/kobo-docker.git
 else echo Looks like Kobo Toolbox is already downloaded
 fi
+
 cd kobo-docker
 
 echo creating a symbolic link to the server configuration for Docker-compose
@@ -74,17 +86,6 @@ if [ ! -f envfile.server.txt.BAK ]; then
 
 else echo looks like envfile.server.txt has already been modified
 fi
-
-echo installing letsencrypt    
-if ! type "letsencrypt"; then
-    sudo apt install -y letsencrypt
-else echo letsencrypt seems to be already installed
-fi
-
-echo running letsencrypt to get certificate for $domain_name
-sudo letsencrypt certonly --standalone -d $domain_name \
-     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
-     -d en.$domain_name
 
 echo creating a secrets directory for the ssl keys
 if [ ! -d secrets ]; then
