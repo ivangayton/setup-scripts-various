@@ -14,6 +14,7 @@ Documenting the setup process for servers I use. Ultimately creating provisionin
 `./kobotoolbox_secured_server_docker_install`
 
 - Answer the questions my script asks you (domain name, username and password for your initial Kobo user, and support email address; do try to type all of these accurately)
+- Provide the script with the sudo password for the user account on the server
 - Answer the questions on the LetsEncrypt dialogue that the script will launch (your email address and your agreement to the ToS)
 - Wait while a bunch of gobbledygook whizzes by, hopefully ending with a message suggesting that you try out your new server
 - Give it a minute for the server to actually initialize
