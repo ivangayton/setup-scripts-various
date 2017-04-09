@@ -105,3 +105,10 @@ sudo docker-compose up -d
 
 echo
 echo That should be it. Go to $domain_name to see if you have a working server!
+
+# TODO add crontab jobs to clean up docker images like this:
+# docker rmi $(docker images -f "dangling=true" -q)
+# docker rm -v $(docker ps -a -q -f status=exited)
+# as per http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
+
+
