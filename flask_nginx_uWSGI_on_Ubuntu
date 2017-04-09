@@ -10,7 +10,7 @@ echo installing python3, pip, and nginx
 sudo apt install -y python3-pip python3-dev nginx
 
 echo installing virtualenv
-sudo pip install virtualenv
+sudo pip3 install virtualenv
 
 echo creating and stepping into a folder for the flask project
 mkdir ~/flaskproject
