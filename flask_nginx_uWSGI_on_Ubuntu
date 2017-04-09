@@ -1,0 +1,28 @@
+#!/bin/bash -eu
+
+# Set up a server running a secure instance of Flask on Nginx using uWSGI
+# on python3 as per this tutorial:
+# https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-uwsgi-and-nginx-on-ubuntu-16-04
+
+sudo apt -y update
+
+echo installing python3, pip, and nginx
+sudo apt install -y python3-pip python3-dev nginx
+
+echo installing virtualenv
+sudo pip install virtualenv
+
+echo creating and stepping into a folder for the flask project
+mkdir ~/flaskproject
+cd ~/flaskproject
+
+echo creating a virtual environment
+virtualenv flaskprojectenv
+
+echo activating virtual environment
+source flaskprojectenv/bin/activate
+
+echo installing uwsgi and flask
+pip install -y uwsgi flask
+
+
