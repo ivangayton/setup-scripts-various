@@ -9,6 +9,9 @@ sudo apt -y update
 echo installing python3, pip, and nginx
 sudo apt install -y python3-pip python3-dev nginx
 
+echo upgrading pip
+sudo pip3 install --upgrade pip
+
 echo installing virtualenv
 sudo pip3 install virtualenv
 
