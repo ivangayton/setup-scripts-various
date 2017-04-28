@@ -22,10 +22,11 @@ cd ~/flaskproject
 echo creating a virtual environment
 virtualenv flaskprojectenv
 
+# this breaks
 echo activating virtual environment
 source flaskprojectenv/bin/activate
 
 echo installing uwsgi and flask
-pip install -y uwsgi flask
+pip install uwsgi flask
 
 
