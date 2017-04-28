@@ -9,8 +9,12 @@ Documenting the setup process for servers I use. Ultimately creating provisionin
 - wait until the DNS propagates (likely not more than a day, in my experience usually a few hours)
 - Log into your server, create a user with sudo privileges, and ssh into the new user (well, do this: https://www.digitalocean.com/community/tutorials/how-to-connect-to-your-droplet-with-ssh and this: https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04)
 - Run the following commands: 
+
 `git clone https://github.com/ivangayton/setup-scripts-various.git`
-`setup_scripts_various/kobotoolbox_secured_server_docker_install`
+
+`cd setup_scripts_various`
+
+`./kobotoolbox_secured_server_docker_install`
 
 - Answer the questions my script asks you:
  - domain name (the one you got from the vendor), username and password for your initial Kobo user (that they will use to log in to your server), and support email address; do try to type all of these accurately)
