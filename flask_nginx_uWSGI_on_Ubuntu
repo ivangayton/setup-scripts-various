@@ -1,4 +1,7 @@
-#!/bin/bash -eu
+#!/bin/bash
+
+# Normally would set flag -eu but this causes a problem with virtualenv
+# https://stackoverflow.com/questions/42997258/virtualenv-activate-script-wont-run-in-bash-script-with-set-euo
 
 # Set up a server running a secure instance of Flask on Nginx using uWSGI
 # on python3 as per this tutorial:
@@ -22,11 +25,73 @@ cd ~/flaskproject
 echo creating a virtual environment
 virtualenv flaskprojectenv
 
-# this breaks
+# this breaks if -eu flag is set for bash script
 echo activating virtual environment
-source flaskprojectenv/bin/activate
+source ~/flaskproject/flaskprojectenv/bin/activate
 
 echo installing uwsgi and flask
 pip install uwsgi flask
 
+echo Creating placeholder Flask app flaskproject.py
+cat > flaskproject.py <<EOF
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "<h1>Yo!</h1>"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+EOF
+
+echo opening port 5000 to test application
+sudo ufw allow 5000
+
+echo
+echo Creating WSGI entry point
+cat > wsgi.py <<EOF
+from flaskproject import app
+
+if __name__ == "__main__":
+    app.run()
+EOF
+
+echo deactivating virtual environment
+deactivate
+
+echo creating uWSGI configuration file
+cat > flaskproject.ini <<EOF
+[uwsgi]
+module = wsgi:app
+
+master = true
+processes = 5
+
+socket = flaskproject.sock
+chmod-socket = 660
+vacuum = true
+
+die-on-term = true
+EOF
+
+sudo cat > /etc/systemd/system/flaskproject.service <<EOF
+[Unit]
+Description=uWSGI instance to serve flaskproject
+After=network.target
+
+[Service]
+User=$USER
+Group=www-data
+WorkingDirectory=/home/$USER/flaskproject
+Environment="PATH=/home/$USER/flaskproject/flaskprojectenv/bin"
+ExecStart=/home/$USER/flaskproject/flaskprojectenv/bin/uwsgi --ini flaskproject.ini
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo starting and enabling project with systemctl
+sudo systemctl start flaskproject
+sudo systemctl enable flaskproject
 
