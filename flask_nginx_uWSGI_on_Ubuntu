@@ -113,14 +113,14 @@ cat > $project_name <<EOF
 server {
     listen 80;
         server_name $ip_address $domain_name;
-        return 301 https://$server_name$request_uri;
+        return 301 https://\$server_name\$request_uri;
         location ~ /.well-known {
                 allow all;
     }
 
     location / {
         include uwsgi_params;
-    uwsgi_pass unix:///home/$USER/project_name/project_name.sock;
+    uwsgi_pass unix:///home/$USER/$project_name/$project_name.sock;
     }
 }
 
@@ -135,7 +135,7 @@ server {
 
     location / {
         include uwsgi_params;
-    uwsgi_pass unix:///home/$USER/project_name/$project_name.sock;
+    uwsgi_pass unix:///home/$USER/$project_name/$project_name.sock;
     }
 }
 EOF
