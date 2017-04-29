@@ -13,6 +13,8 @@ echo what is the name of your project?
 read project_name
 envstring="env"
 envstring=$project_name$envstring
+echo what is the IP address you will be using?
+read ip_address
 
 sudo apt -y update
 
@@ -110,7 +112,7 @@ echo creating an nginx site configuration for $project_name
 cat > $project_name <<EOF
 server {
     listen 80;
-        server_name 104.131.81.120 $domain_name;
+        server_name $ip_address $domain_name;
         return 301 https://$server_name$request_uri;
         location ~ /.well-known {
                 allow all;
