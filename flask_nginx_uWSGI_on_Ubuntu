@@ -141,13 +141,22 @@ server {
 EOF
 
 echo moving the nginx config file to /etc/nginx/sites-available
-sudo mv $project_name /etc/nginx/sites-available
+sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/defaultBAKFLASK
+# This should be copied to project_name not to default
+sudo mv $project_name /etc/nginx/sites-available/default
 
 echo symlinking the config file to /etc/nginx/sites-enabled
-sudo ln -s /etc/nginx/sites-available/$project_name /etc/nginx/sites-enabled
+# This should be project_name not default
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled
 
+echo retarting nginx
 sudo systemctl restart nginx
 
+echo closing port 5000 back up again
 sudo ufw delete allow 5000
 
+echo allowing nginx through the firewall (probably already fine, just in case)
 sudo ufw allow 'Nginx Full'
+
+echo
+echo go to $domain_name and see what you see now!
