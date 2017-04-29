@@ -7,6 +7,13 @@
 # on python3 as per this tutorial:
 # https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-uwsgi-and-nginx-on-ubuntu-16-04
 
+echo what is your domain name?
+read domain_name
+echo what is the name of your project?
+read project_name
+envstring="env"
+envstring=$project_name$envstring
+
 sudo apt -y update
 
 echo installing python3, pip, and nginx
@@ -19,21 +26,21 @@ echo installing virtualenv
 sudo pip3 install virtualenv
 
 echo creating and stepping into a folder for the flask project
-mkdir ~/flaskproject
-cd ~/flaskproject
+mkdir ~/$project_name
+cd ~/$project_name
 
-echo creating a virtual environment
-virtualenv flaskprojectenv
+echo creating a virtual environment $envstring
+virtualenv $envstring
 
 # this breaks if -eu flag is set for bash script
-echo activating virtual environment
-source ~/flaskproject/flaskprojectenv/bin/activate
+echo activating virtual environment $envstring
+source ~/$project_name/$envstring/bin/activate
 
 echo installing uwsgi and flask
 pip install uwsgi flask
 
-echo Creating placeholder Flask app flaskproject.py
-cat > flaskproject.py <<EOF
+echo Creating placeholder Flask app $project_name.py
+cat > $project_name.py <<EOF
 from flask import Flask
 app = Flask(__name__)
 
@@ -51,7 +58,7 @@ sudo ufw allow 5000
 echo
 echo Creating WSGI entry point
 cat > wsgi.py <<EOF
-from flaskproject import app
+from $project_name import app
 
 if __name__ == "__main__":
     app.run()
@@ -61,37 +68,84 @@ echo deactivating virtual environment
 deactivate
 
 echo creating uWSGI configuration file
-cat > flaskproject.ini <<EOF
+cat > $project_name.ini <<EOF
 [uwsgi]
 module = wsgi:app
 
 master = true
 processes = 5
 
-socket = flaskproject.sock
+socket = $project_name.sock
 chmod-socket = 660
 vacuum = true
 
 die-on-term = true
 EOF
 
-sudo cat > /etc/systemd/system/flaskproject.service <<EOF
+echo creating a systemd service file for $project_name
+cat > $project_name.service <<EOF
 [Unit]
-Description=uWSGI instance to serve flaskproject
+Description=uWSGI instance to serve $project_name
 After=network.target
 
 [Service]
 User=$USER
 Group=www-data
-WorkingDirectory=/home/$USER/flaskproject
-Environment="PATH=/home/$USER/flaskproject/flaskprojectenv/bin"
-ExecStart=/home/$USER/flaskproject/flaskprojectenv/bin/uwsgi --ini flaskproject.ini
+WorkingDirectory=/home/$USER/$project_name
+Environment="PATH=/home/$USER/$project_name/$envstring/bin"
+ExecStart=/home/$USER/$project_name/$envstring/bin/uwsgi --ini $project_name.ini
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-echo starting and enabling project with systemctl
-sudo systemctl start flaskproject
-sudo systemctl enable flaskproject
+echo moving the service file into /etc/systemd/system
+sudo mv $project_name.service /etc/systemd/system/
 
+echo starting and enabling project with systemctl
+sudo systemctl start $project_name
+sudo systemctl enable $project_name
+
+echo creating an nginx site configuration for $project_name
+cat > $project_name <<EOF
+server {
+    listen 80;
+        server_name 104.131.81.120 $domain_name;
+        return 301 https://$server_name$request_uri;
+        location ~ /.well-known {
+                allow all;
+    }
+
+    location / {
+        include uwsgi_params;
+    uwsgi_pass unix:///home/$USER/project_name/project_name.sock;
+    }
+}
+
+server {
+       # SSL config
+
+       listen 443 ssl http2 default_server;
+       listen [::]:443 ssl http2 default_server;
+
+       include snippets/ssl-$domain_name.conf;
+       include snippets/ssl-params.conf;
+
+    location / {
+        include uwsgi_params;
+    uwsgi_pass unix:///home/$USER/project_name/$project_name.sock;
+    }
+}
+EOF
+
+echo moving the nginx config file to /etc/nginx/sites-available
+sudo mv $project_name /etc/nginx/sites-available
+
+echo symlinking the config file to /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/$project_name /etc/nginx/sites-enabled
+
+sudo systemctl restart nginx
+
+sudo ufw delete allow 5000
+
+sudo ufw allow 'Nginx Full'
