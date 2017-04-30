@@ -155,7 +155,7 @@ sudo systemctl restart nginx
 echo closing port 5000 back up again
 sudo ufw delete allow 5000
 
-echo allowing nginx through the firewall (probably already fine, just in case)
+echo allowing nginx through the firewall. Probably already fine, just in case.
 sudo ufw allow 'Nginx Full'
 
 echo
