@@ -58,7 +58,7 @@ fi
 
 echo
 echo what email address do you want to use for your letsencrypt cert?
-read $email
+read email
 
 echo updating distro
 sudo apt -y update
