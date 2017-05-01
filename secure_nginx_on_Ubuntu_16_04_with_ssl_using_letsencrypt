@@ -97,7 +97,7 @@ if [ ! -d /etc/letsencrypt/live ]; then
 
     #TODO add all the subdomains to this command
     
-    sudo letsencrypt certonly -n --agree-tos -n $email -a webroot --webroot-path=/var/www/html -d $domain_name -d www.$domain_name
+    sudo letsencrypt certonly -n --agree-tos -m $email -a webroot --webroot-path=/var/www/html -d $domain_name -d www.$domain_name
 
     echo backing up letsencrypt folder
     sudo cp -r /etc/letsencrypt/live/ /etc/letsencrypt/liveBAK
