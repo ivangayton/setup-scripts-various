@@ -115,3 +115,9 @@ echo That should be it. Go to $domain_name to see if you have a working server!
 # the script asking how they want their backups etc done
 
 # TODO add cron job to renew letsencrypt certs
+# from kobo-docker folder do:
+# sudo docker-compose stop # so that letsencrypt can use port 80
+# sudo letsencrypt certonly --standalone -d $domain_name \
+#     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
+#     -d en.$domain_name
+# sudo docker-compose up -d
