@@ -120,4 +120,11 @@ echo That should be it. Go to $domain_name to see if you have a working server!
 # sudo letsencrypt certonly --standalone -d $domain_name \
 #     -d www.$domain_name -d kf.$domain_name -d kc.$domain_name \
 #     -d en.$domain_name
+
+# Then copy the certs into the secrets folder from the NEW letsencrypt folder
+
+# git pull
+# sudo docker-compose pull
+
+
 # sudo docker-compose up -d
