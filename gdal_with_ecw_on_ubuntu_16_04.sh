@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# run as root
-
 apt install unzip
 apt-get build-dep gdal
 
@@ -15,14 +13,18 @@ wget http://www.kyngchaos.com/files/macosxport/libecwj2-3.3-2006-09-06.zip &&\
     patch -p0< ../libecwj2-3.3-NCSPhysicalMemorySize-Linux.patch &&\
     patch -p1< ../libecwj2-3.3-wcharfix.patch &&\
     ./configure &&\
-    make &&\
-    make install
+    make
+
+sudo make install
 
 wget -c http://download.osgeo.org/gdal/2.2.1/gdal-2.2.1.tar.gz
 tar -xzf gdal-2.2.1.tar.gz
 cd gdal-2.2.1/
 ./configure --with-python --with-spatialite --with-pg --with-curl --with-ecw=/usr/local
-make
-make install
-ldconfig
 
+make
+
+sudo make install
+sudo ldconfig
+
+# now run gdalinfo --formats | grep ECW to see if it worked
