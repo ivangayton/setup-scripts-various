@@ -1,7 +1,7 @@
 #!/bin/bash
 
-apt install unzip
-apt-get build-dep gdal
+sudo apt install unzip
+sudo apt-get build-dep gdal
 
 wget http://www.kyngchaos.com/files/macosxport/libecwj2-3.3-2006-09-06.zip &&\
     unzip libecwj2-3.3-2006-09-06.zip &&\
