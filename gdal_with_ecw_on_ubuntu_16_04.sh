@@ -95,4 +95,5 @@ echo configuring the gdal path
 sudo ldconfig
 
 echo
-echo done! now run gdalinfo --formats | grep ECW to see if it worked
+echo done! now run:
+echo 'gdalinfo --formats | grep ECW to see if it worked'
