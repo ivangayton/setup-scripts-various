@@ -17,14 +17,14 @@ if [ ! -f libecwj2-3.3-2006-09-06.zip ]; then
     echo downloading the Erdas file from Kyng Chaos
     wget http://www.kyngchaos.com/files/macosxport/libecwj2-3.3-2006-09-06.zip
 else echo looks like you already have the Erdas SDK file
-     sleep 1
+     sleep 5
 fi
 
 if [ ! -f libecwj2-3.3-msvc90-fixes.patch ]; then
     echo downloading a patch from OSGEO for the Erdas SDK
     wget http://trac.osgeo.org/gdal/raw-attachment/ticket/3162/libecwj2-3.3-msvc90-fixes.patch
 else echo looks like you already have the OSGEO patch
-     sleep 1
+     sleep 5
 fi
 
 echo Unzipping the libecw file
@@ -37,7 +37,7 @@ if [ ! -f libecwj2-3.3-wcharfix.patch ]; then
     echo downloading a character fix patch from OSGEO for the Erdas SDK
     wget http://osgeo-org.1560.x6.nabble.com/attachment/5001530/0/libecwj2-3.3-wcharfix.patch
 else echo looks like you already have the character fix patch
-     sleep 1
+     sleep 5
 fi
 
 if [ ! -f libecwj2-3.3-wcharfix.patch ]; then
@@ -63,8 +63,10 @@ make
 echo installing the ecw library
 sudo make install
 
-echo now heading into the GDAL download and install from
+echo stepping out of the libecw folder
+cd ..
 pwd
+
 sleep 10
 
 if [ ! -f gdal-2.2.1.tar.gz ]; then
