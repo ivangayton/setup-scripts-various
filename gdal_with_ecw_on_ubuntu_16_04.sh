@@ -12,6 +12,14 @@ echo make sure you have sources enabled for all repos
 sudo apt -y install unzip
 sudo apt-get -y build-dep gdal
 
+echo downloading GDAL
+if [ ! -f gdal-2.2.1.tar.gz ]; then
+    echo downloading the gdal sources
+    wget -c http://download.osgeo.org/gdal/2.2.1/gdal-2.2.1.tar.gz
+else echo looks like you already have the gdal sources
+     sleep 1
+fi
+
 echo downloading the Erdas SDK and patches
 if [ ! -f libecwj2-3.3-2006-09-06.zip ]; then
     echo downloading the Erdas file from Kyng Chaos
@@ -68,13 +76,6 @@ cd ..
 pwd
 
 sleep 10
-
-if [ ! -f gdal-2.2.1.tar.gz ]; then
-    echo downloading the gdal sources
-    wget -c http://download.osgeo.org/gdal/2.2.1/gdal-2.2.1.tar.gz
-else echo looks like you already have the gdal sources
-     sleep 1
-fi
 
 echo unzipping the gdal source
 tar -xzf gdal-2.2.1.tar.gz
