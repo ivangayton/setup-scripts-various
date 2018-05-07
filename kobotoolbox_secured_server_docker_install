@@ -119,6 +119,7 @@ echo docker-compose exec kobocat chown -R wsgi /srv/src/kobocat
 # docker rmi $(docker images -f "dangling=true" -q)
 # docker rm -v $(docker ps -a -q -f status=exited)
 # as per http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself/
+# or sudo docker system prune -a
 
 # TODO database backup scheduling (probably add questions to the begining of
 # the script asking how they want their backups etc done
