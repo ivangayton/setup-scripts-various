@@ -18,7 +18,7 @@ read ip_address
 
 echo updating and upgrading
 {
-apt-get update && apt-get upgrade
+    sudo apt update && sudo apt -y upgrade
 } > /dev/null 
 
 echo installing python3
