@@ -16,10 +16,18 @@ envstring=$project_name$envstring
 echo what is the IP address you will be using?
 read ip_address
 
-sudo apt -y update
+echo updating and upgrading
+{
+apt-get update && apt-get upgrade
+} > /dev/null 
 
-echo installing python3, pip, and nginx
-sudo apt install -y python3-pip python3-dev nginx
+echo installing python3
+sudo apt install -y python3
+sudo apt install -y python3-dev
+echo installing pip3
+sudo apt install -y python3-pip
+echo installing nginx
+sudo apt install -y nginx
 
 echo upgrading pip
 sudo pip3 install --upgrade pip
@@ -143,11 +151,10 @@ EOF
 echo moving the nginx config file to /etc/nginx/sites-available
 sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/defaultBAKFLASK
 # This should be copied to project_name not to default
-sudo mv $project_name /etc/nginx/sites-available/default
+sudo mv $project_name /etc/nginx/sites-available/$project_name
 
 echo symlinking the config file to /etc/nginx/sites-enabled
-# This should be project_name not default
-sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/$project_name /etc/nginx/sites-enabled/
 
 echo retarting nginx
 sudo systemctl restart nginx
