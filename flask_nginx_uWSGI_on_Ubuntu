@@ -16,29 +16,50 @@ envstring=$project_name$envstring
 echo what is the IP address you will be using?
 read ip_address
 
-echo updating and upgrading
+echo updating upgrading and autoremoving
 {
-    sudo apt update && sudo apt -y upgrade
+    sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove
 } > /dev/null 
 
+echo
 echo installing python3
-sudo apt install -y python3
-sudo apt install -y python3-dev
-echo installing pip3
-sudo apt install -y python3-pip
-echo installing nginx
-sudo apt install -y nginx
+{
+    sudo apt install -y python3
+} > /dev/null
+{
+    sudo apt install -y python3-dev
+} > /dev/null
 
+echo
+echo installing pip3
+{
+    sudo apt install -y python3-pip
+} > /dev/null
+
+echo
+echo installing nginx
+{
+    sudo apt install -y nginx
+} > /dev/null
+
+echo
 echo upgrading pip
-sudo pip3 install --upgrade pip
+{
+    sudo pip3 install --upgrade pip
+} > /dev/null
+
 
 echo installing virtualenv
-sudo pip3 install virtualenv
+{
+    sudo pip3 install virtualenv
+} > /dev/null
 
+echo
 echo creating and stepping into a folder for the flask project
 mkdir ~/$project_name
 cd ~/$project_name
 
+echo
 echo creating a virtual environment $envstring
 virtualenv $envstring
 
@@ -46,9 +67,13 @@ virtualenv $envstring
 echo activating virtual environment $envstring
 source ~/$project_name/$envstring/bin/activate
 
+echo
 echo installing uwsgi and flask
-pip install uwsgi flask
+{
+    pip install uwsgi flask
+} > /dev/null
 
+echo
 echo Creating placeholder Flask app $project_name.py
 cat > $project_name.py <<EOF
 from flask import Flask
@@ -109,13 +134,16 @@ ExecStart=/home/$USER/$project_name/$envstring/bin/uwsgi --ini $project_name.ini
 WantedBy=multi-user.target
 EOF
 
+echo
 echo moving the service file into /etc/systemd/system
 sudo mv $project_name.service /etc/systemd/system/
 
+echo
 echo starting and enabling project with systemctl
 sudo systemctl start $project_name
 sudo systemctl enable $project_name
 
+echo
 echo creating an nginx site configuration for $project_name
 cat > $project_name <<EOF
 server {
@@ -150,12 +178,12 @@ EOF
 
 echo moving the nginx config file to /etc/nginx/sites-available
 sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/defaultBAKFLASK
-# This should be copied to project_name not to default
 sudo mv $project_name /etc/nginx/sites-available/$project_name
 
 echo symlinking the config file to /etc/nginx/sites-enabled
 sudo ln -s /etc/nginx/sites-available/$project_name /etc/nginx/sites-enabled/
 
+echo
 echo retarting nginx
 sudo systemctl restart nginx
 
