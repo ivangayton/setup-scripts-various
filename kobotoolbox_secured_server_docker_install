@@ -107,13 +107,6 @@ echo
 echo That should be it. Now wait for about five minutes, then
 echo open $domain_name in a browser to see if you have a working server!
 echo
-echo THERE IS A NEW BUG IN KOBO TOOLBOX DOCKER SETUP
-echo THIS IS TEMPORARY, AND IS BEING FIXED AS OF APRIL 11 2018
-echo BUT FOR NOW THERE IS A WORKAROUND TO MAKE YOUR SERVER FUNCTION PROPERLY
-echo
-echo After your server is running, you need to
-echo navigate to /home/$USER/kobo-docker/ and enter the command
-echo docker-compose exec kobocat chown -R wsgi /srv/src/kobocat
 
 # TODO add crontab jobs to clean up docker images like this:
 # docker rmi $(docker images -f "dangling=true" -q)
@@ -132,6 +125,9 @@ echo docker-compose exec kobocat chown -R wsgi /srv/src/kobocat
 #     -d en.$domain_name
 
 # Then copy the certs into the secrets folder from the NEW letsencrypt folder
+
+# sudo cp /etc/letsencrypt/live/$domain_name/fullchain.pem secrets/ssl.crt
+# sudo cp /etc/letsencrypt/live/$domain_name/privkey.pem secrets/ssl.key
 
 # git pull
 # sudo docker-compose pull
