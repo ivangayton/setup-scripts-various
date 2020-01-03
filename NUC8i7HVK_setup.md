@@ -119,7 +119,7 @@ sudo nano /etc/modprobe.d/alsa-base.conf
 ```
 and add the following line to it:
 ```
-options snd-hda-intel power_save_controller=1
+options snd-hda-intel vid=8086 pid=8ca0 snoop=0
 ```
 Save and close, and now edit the pulseaudio config-file /etc/pulse/daemon.conf
 ```
