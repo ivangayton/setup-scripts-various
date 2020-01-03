@@ -90,3 +90,46 @@ sudo /usr/sbin/update-initramfs -u -k all
 # Download some video games or something.
 
 I ran glxmark2 and got a score of 10777. As far as I know, that's pretty good.
+
+# Proper sound through HDMI
+To get proper sound through HDMI or Displayport, you need to modify pulseaudio's configuration slightly. Edit `/etc/pulse/default.pa`
+```
+sudo nano /etc/pulse/default.pa
+```
+Modify the line
+```
+load-module module-udev-detect
+```
+into
+```
+load-module module-udev-detect tsched=0
+```
+If you want to reload pulseaudio without restarting, then kill the running daemon and restart it
+by running the following commands: 
+```
+pulseaudio -k
+pulseaudio --start
+```
+# Prevent crackling sound in demanding apps
+Games work fantasticly on this NUC. Whilst playing  demanding games such as The Witcher 3 
+(which runs beautifully) you will experience seriously crackling noise in the sound. To resolve this
+ edit /etc/modprobe.d/alsa-base.conf
+```
+sudo nano /etc/modprobe.d/alsa-base.conf
+```
+and add the following line to it:
+```
+options snd-hda-intel power_save_controller=1
+```
+Save and close, and now edit the pulseaudio config-file /etc/pulse/daemon.conf
+```
+sudo nano /etc/pulse/daemon.conf
+```
+After some experimentation, the settings below made the cracks entirely disappear. 
+Make sure the following lines are present and configured properly. They are probably commented.
+Note that comment signs in this config file are not `#` but `;` signs.
+```
+default-fragments = 8
+default-fragment-size-msec = 10
+```
+After these edits kill and restart the pulseaudio daemon and you should have perfectly smooth sound.
